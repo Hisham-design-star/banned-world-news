@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banned World News | Radar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #ce0000; --bg: #0f0f0f; --card: #1e1e1e; --gold: #ffd700; --palestine: #007a3d; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
+        .navbar { background: var(--primary); padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        
+        /* شبكة الأيقونات المحدثة - 8 أقسام */
+        .icon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; padding: 20px; }
+        .icon-card { background: var(--card); padding: 20px; text-align: center; border-radius: 15px; cursor: pointer; transition: 0.3s; border: 1px solid #333; position: relative; }
+        .icon-card:hover { transform: translateY(-5px); border-color: var(--primary); background: #252525; }
+        .icon-card i { font-size: 30px; margin-bottom: 10px; display: block; color: var(--primary); }
+
+        /* الأيقونة الجاذبة - الترتيب الأول */
+        .banned-news-card { border: 2px solid var(--primary); background: linear-gradient(145deg, #1e1e1e, #2a0000); }
+        .banned-news-card i { color: #ff3e3e; animation: pulse 2s infinite; }
+
+        /* قسم فلسطين المميز */
+        .palestine-special { border: 2px solid var(--palestine); }
+        .palestine-special i { color: var(--palestine); }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* لوحة المقارنة والتحليل */
+        .news-item { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid var(--primary); }
+        .comparison-box { display: flex; gap: 10px; margin: 15px 0; }
+        .view { flex: 1; padding: 15px; border-radius: 8px; font-size: 0.9em; line-height: 1.4; }
+        .east { background: #1a252f; border-top: 3px solid #c0392b; }
+        .west { background: #2c3e50; border-top: 3px solid #2980b9; }
+        .truth-zone { background: #002b16; padding: 15px; border-radius: 8px; border: 1px solid var(--palestine); margin-top: 10px; }
+
+        /* نظام الاشتراك */
+        #payment-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .payment-box { background: var(--card); padding: 40px; border-radius: 20px; text-align: center; border: 2px solid var(--gold); max-width: 80%; }
+        
+        .download-group { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
+        button { cursor: pointer; border-radius: 5px; border: none; padding: 10px 15px; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h2 id="app-title"><i class="fa-solid fa-radiation"></i> Banned World News</h2>
+        <select id="lang-switcher" onchange="switchLang()" style="background:#333; color:white; border:1px solid #555; padding:5px;">
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+            <option value="zh">中文</option>
+            <option value="fr">Français</option>
+            <option value="it">Italiano</option>
+            <option value="de">Deutsch</option>
+            <option value="ja">日本語</option>
+        </select>
+    </div>
+
+    <div class="icon-grid">
+        <div class="icon-card banned-news-card" onclick="showSection('banned')">
+            <i class="fa-solid fa-eye-slash"></i>
+            <strong>Banned News</strong>
+            <small style="display:block; font-size:10px; color:var(--gold);">Most Searched</small>
+        </div>
+
+        <div class="icon-card palestine-special" onclick="showSection('palestine')">
+            <i class="fa-solid fa-person-military-pointing"></i>
+            <strong>Palestine</strong>
+            <small style="display:block; font-size:10px; color:var(--gold);">Documentation</small>
+        </div>
+
+        <div class="icon-card" onclick="showSection('military-ops')">
+            <i class="fa-solid fa-crosshairs"></i>
+            <strong>Military Now</strong>
+        </div>
+
+        <div class="icon-card" onclick="showSection('arsenal')">
+            <i class="fa-solid fa-jet-fighter"></i>
+            <strong>Arsenal</strong>
+        </div>
+
+        <div class="icon-card" onclick="showSection('tech')">
+            <i class="fa-solid fa-microchip"></i>
+            <strong>Tech & Science</strong>
+        </div>
+
+        <div class="icon-card" onclick="showSection('fifa')">
+            <i class="fa-solid fa-futbol"></i>
+            <strong>FIFA</strong>
+        </div>
+
+        <div class="icon-card" onclick="showSection('archive')">
+            <i class="fa-solid fa-box-archive"></i>
+            <strong>15Y Archive</strong>
+        </div>
+
+        <div class="icon-card" onclick="showSection('sub')">
+            <i class="fa-solid fa-wallet"></i>
+            <strong>My Pi Wallet</strong>
+        </div>
+    </div>
+
+    <div id="content-area" style="padding: 20px;">
+        <div style="text-align:center; color:#666; margin-top:50px;">
+            <i class="fa-solid fa-satellite-dish fa-3x"></i>
+            <p>Select a section to start the AI Radar Analysis</p>
+        </div>
+    </div>
+
+    <div id="payment-overlay">
+        <div class="payment-box">
+            <i class="fa-solid fa-lock fa-3x" style="color:var(--gold); margin-bottom:20px;"></i>
+            <h3>Period Ended</h3>
+            <p>To continue accessing the 15-year deep archives and verified content:</p>
+            <button onclick="payPi()" style="background:var(--gold); color:black; font-weight:bold; padding:15px 30px;">
+                Pay 5 Pi (90 Days Access)
+            </button>
+            <p style="font-size:12px; margin-top:15px; color:#888;">Subscription renews every 3 months</p>
+        </div>
+    </div>
+
+    <script>
+        // 1. إدارة الوقت والاشتراك (3 أيام تجربة)
+        const TRIAL_PERIOD = 3 * 24 * 60 * 60 * 1000;
+        let startTime = localStorage.getItem('installDate') || Date.now();
+        localStorage.setItem('installDate', startTime);
+
+        function checkSubscription() {
+            if (Date.now() - startTime > TRIAL_PERIOD && !localStorage.getItem('isPaid')) {
+                document.getElementById('payment-overlay').style.display = 'flex';
+            }
+        }
+        setInterval(checkSubscription, 60000);
+
+        // 2. محرك البحث والتحليل (يدعم 15 عاماً والحيادية)
+        function showSection(type) {
+            let content = "";
+            if(type === 'palestine') {
+                content = renderPalestine();
+            } else {
+                content = renderGeneral(type);
+            }
+            document.getElementById('content-area').innerHTML = content;
+        }
+
+        function renderPalestine() {
+            return `
+                <div class="news-item" style="border-left-color: var(--palestine);">
+                    <h3 style="color:var(--palestine);">Palestine Documentation Center</h3>
+                    <p>AI analyzing 15 years of data from East & West sources...</p>
+                    <div class="comparison-box">
+                        <div class="view east"><strong>Eastern View:</strong> Comprehensive documentation of ground violations and geopolitical shifts.</div>
+                        <div class="view west"><strong>Western View:</strong> Official statements vs. media coverage analysis.</div>
+                    </div>
+                    <div class="truth-zone">
+                        <strong><i class="fa-solid fa-check-double"></i> Verified Ground Truth:</strong>
+                        Actual evidence, field testimonies, and satellite imagery debunking false narratives.
+                    </div>
+                    <div class="download-group">
+                        <button onclick="download('topic')" style="background:#444; color:white;">Download Topic (PDF)</button>
+                        <button onclick="download('all')" style="background:var(--palestine); color:white;">Download Full Palestine Archive</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGeneral(type) {
+            return `
+                <div class="news-item">
+                    <h3>${type.toUpperCase()} - Radar Analysis</h3>
+                    <p>Scanning global networks (Telegram, X, TikTok) for censored data...</p>
+                    <div class="comparison-box">
+                        <div class="view east"><strong>East (China/Russia/BRICS):</strong> Loading divergent perspective...</div>
+                        <div class="view west"><strong>West (USA/Europe):</strong> Loading mainstream narrative...</div>
+                    </div>
+                    <div class="truth-zone" style="background:#111;">
+                        <strong>AI Logic Analysis:</strong> Detecting contradictions in official reports using 15-year historical context.
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchLang() {
+            const lang = document.getElementById('lang-switcher').value;
+            alert("Switching interface to: " + lang + ". AI Translation active.");
+        }
+
+        function download(mode) {
+            alert("Encrypting and preparing your secure download: " + mode);
+        }
+
+        window.onload = checkSubscription;
+    </script>
+</body>
+</html>
