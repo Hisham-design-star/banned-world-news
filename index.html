@@ -1,196 +1,252 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banned World News | Radar</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>رادار الحقيقة الموثقة | لوحة التحكم السيادية</title>
     <style>
-        :root { --primary: #ce0000; --bg: #0f0f0f; --card: #1e1e1e; --gold: #ffd700; --palestine: #007a3d; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
-        .navbar { background: var(--primary); padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        /* المتغيرات والألوان السيادية */
+        :root {
+            --bg-dark: #0a0a0a;
+            --card-bg: #161616;
+            --text-main: #e0e0e0;
+            --text-muted: #888;
+            --banned-red: #d32f2f;
+            --palestine-green: #1b5e20;
+            --military-orange: #e65100;
+            --loss-gray: #455a64;
+            --accent-gold: #ffb300;
+        }
+
+        /* الإعدادات الأساسية */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        /* الرأس والشريط الإخباري */
+        header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+        h1 { color: #fff; font-size: 2.5rem; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        .live-ticker { background: #222; padding: 10px; border-radius: 5px; font-size: 0.9rem; margin-top: 10px; color: var(--accent-gold); display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .pulse { width: 10px; height: 10px; background-color: #ff3b30; border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* التبويبات (Navigation) - بالترتيب السيادي المعتمد */
+        .tabs { display: flex; gap: 15px; margin-bottom: 30px; justify-content: center; flex-wrap: wrap; }
+        .tab-btn { background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; }
+        .tab-btn:hover { transform: translateY(-2px); }
+        .tab-btn.active-banned { background: var(--banned-red); border-color: #ff5252; box-shadow: 0 0 15px rgba(211,47,47,0.4); }
+        .tab-btn.active-palestine { background: var(--palestine-green); border-color: #4caf50; box-shadow: 0 0 15px rgba(27,94,32,0.4); }
+        .tab-btn.active-military { background: var(--military-orange); border-color: #ff9800; box-shadow: 0 0 15px rgba(230,81,0,0.4); }
+        .tab-btn.active-losses { background: var(--loss-gray); border-color: #90a4ae; box-shadow: 0 0 15px rgba(69,90,100,0.4); }
+
+        /* شبكة البطاقات */
+        .feed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
         
-        /* شبكة الأيقونات المحدثة - 8 أقسام */
-        .icon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; padding: 20px; }
-        .icon-card { background: var(--card); padding: 20px; text-align: center; border-radius: 15px; cursor: pointer; transition: 0.3s; border: 1px solid #333; position: relative; }
-        .icon-card:hover { transform: translateY(-5px); border-color: var(--primary); background: #252525; }
-        .icon-card i { font-size: 30px; margin-bottom: 10px; display: block; color: var(--primary); }
+        /* تصميم البطاقة الذكية */
+        .card { background: var(--card-bg); border: 1px solid #333; border-radius: 10px; padding: 20px; position: relative; overflow: hidden; transition: 0.3s; cursor: pointer; }
+        .card:hover { border-color: var(--text-muted); transform: scale(1.01); }
+        .card::before { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 100%; }
+        .card.banned-theme::before { background: var(--banned-red); }
+        .card.palestine-theme::before { background: var(--palestine-green); }
+        .card.military-theme::before { background: var(--military-orange); }
+        .card.losses-theme::before { background: var(--loss-gray); }
 
-        /* الأيقونة الجاذبة - الترتيب الأول */
-        .banned-news-card { border: 2px solid var(--primary); background: linear-gradient(145deg, #1e1e1e, #2a0000); }
-        .banned-news-card i { color: #ff3e3e; animation: pulse 2s infinite; }
+        .card-badge { display: inline-block; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; }
+        .badge-red { background: rgba(211,47,47,0.2); color: #ff5252; border: 1px solid #ff5252; }
+        .badge-green { background: rgba(76,175,80,0.2); color: #4caf50; border: 1px solid #4caf50; }
 
-        /* قسم فلسطين المميز */
-        .palestine-special { border: 2px solid var(--palestine); }
-        .palestine-special i { color: var(--palestine); }
+        .card-title { font-size: 1.2rem; margin-bottom: 10px; color: #fff; }
+        .card-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; justify-content: space-between; border-top: 1px solid #333; padding-top: 10px; margin-top: 15px; }
+
+        /* النافذة المنبثقة (الوثيقة الشاملة) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: var(--card-bg); width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 12px; border: 1px solid #444; padding: 30px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .close-btn { position: absolute; top: 20px; left: 20px; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
         
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        /* لوحة المقارنة والتحليل */
-        .news-item { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid var(--primary); }
-        .comparison-box { display: flex; gap: 10px; margin: 15px 0; }
-        .view { flex: 1; padding: 15px; border-radius: 8px; font-size: 0.9em; line-height: 1.4; }
-        .east { background: #1a252f; border-top: 3px solid #c0392b; }
-        .west { background: #2c3e50; border-top: 3px solid #2980b9; }
-        .truth-zone { background: #002b16; padding: 15px; border-radius: 8px; border: 1px solid var(--palestine); margin-top: 10px; }
-
-        /* نظام الاشتراك */
-        #payment-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .payment-box { background: var(--card); padding: 40px; border-radius: 20px; text-align: center; border: 2px solid var(--gold); max-width: 80%; }
+        /* تنسيق الأقسام داخل الوثيقة */
+        .doc-section { background: #0f0f0f; border: 1px solid #222; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .doc-section h3 { color: var(--accent-gold); font-size: 1.1rem; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px; }
+        .tech-font { font-family: 'Courier New', Courier, monospace; color: #00e676; font-size: 0.9rem; direction: ltr; text-align: left; background: #000; padding: 5px; border-radius: 4px; display: block;}
         
-        .download-group { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
-        button { cursor: pointer; border-radius: 5px; border: none; padding: 10px 15px; transition: 0.3s; }
+        /* الرد النوعي (كشف المستور) */
+        .retaliation-box { border-right: 4px solid var(--banned-red); background: rgba(211,47,47,0.05); padding: 15px; }
+        .human-box { border-right: 4px solid var(--palestine-green); background: rgba(76,175,80,0.05); padding: 15px; }
     </style>
 </head>
 <body>
 
-    <div class="navbar">
-        <h2 id="app-title"><i class="fa-solid fa-radiation"></i> Banned World News</h2>
-        <select id="lang-switcher" onchange="switchLang()" style="background:#333; color:white; border:1px solid #555; padding:5px;">
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-            <option value="zh">中文</option>
-            <option value="fr">Français</option>
-            <option value="it">Italiano</option>
-            <option value="de">Deutsch</option>
-            <option value="ja">日本語</option>
-        </select>
+<div class="container">
+    <header>
+        <h1>رادار الحقيقة الموثقة</h1>
+        <div class="live-ticker">
+            <span class="pulse"></span>
+            الرادار السيادي يعمل | يتم تطبيق ميثاق "غيروا الحقيقة" آلياً على جميع المصادر
+        </div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn" id="btn-banned" onclick="loadFeed('banned_news_feed.json', 'banned')">🚫 الأخبار المحظورة</button>
+        <button class="tab-btn" id="btn-palestine" onclick="loadFeed('palestine_feed.json', 'palestine')">🇵🇸 مركز فلسطين</button>
+        <button class="tab-btn" id="btn-military" onclick="loadFeed('military_feed.json', 'military')">🛡️ الأحداث العسكرية</button>
+        <button class="tab-btn" id="btn-losses" onclick="loadFeed('losses_feed.json', 'losses')">📊 الخسائر الموثقة</button>
     </div>
 
-    <div class="icon-grid">
-        <div class="icon-card banned-news-card" onclick="showSection('banned')">
-            <i class="fa-solid fa-eye-slash"></i>
-            <strong>Banned News</strong>
-            <small style="display:block; font-size:10px; color:var(--gold);">Most Searched</small>
+    <div id="feed-container" class="feed-grid">
         </div>
+</div>
 
-        <div class="icon-card palestine-special" onclick="showSection('palestine')">
-            <i class="fa-solid fa-person-military-pointing"></i>
-            <strong>Palestine</strong>
-            <small style="display:block; font-size:10px; color:var(--gold);">Documentation</small>
-        </div>
-
-        <div class="icon-card" onclick="showSection('military-ops')">
-            <i class="fa-solid fa-crosshairs"></i>
-            <strong>Military Now</strong>
-        </div>
-
-        <div class="icon-card" onclick="showSection('arsenal')">
-            <i class="fa-solid fa-jet-fighter"></i>
-            <strong>Arsenal</strong>
-        </div>
-
-        <div class="icon-card" onclick="showSection('tech')">
-            <i class="fa-solid fa-microchip"></i>
-            <strong>Tech & Science</strong>
-        </div>
-
-        <div class="icon-card" onclick="showSection('fifa')">
-            <i class="fa-solid fa-futbol"></i>
-            <strong>FIFA</strong>
-        </div>
-
-        <div class="icon-card" onclick="showSection('archive')">
-            <i class="fa-solid fa-box-archive"></i>
-            <strong>15Y Archive</strong>
-        </div>
-
-        <div class="icon-card" onclick="showSection('sub')">
-            <i class="fa-solid fa-wallet"></i>
-            <strong>My Pi Wallet</strong>
-        </div>
+<div class="modal-overlay" id="document-modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal()">✖</button>
+        <div id="modal-body">
+            </div>
     </div>
+</div>
 
-    <div id="content-area" style="padding: 20px;">
-        <div style="text-align:center; color:#666; margin-top:50px;">
-            <i class="fa-solid fa-satellite-dish fa-3x"></i>
-            <p>Select a section to start the AI Radar Analysis</p>
-        </div>
-    </div>
+<script>
+    // الإعدادات الديناميكية لكل قسم
+    const config = {
+        'banned': { theme: 'banned-theme', activeClass: 'active-banned', emptyMsg: 'لا توجد أخبار محظورة حالياً. الرادار يراقب.' },
+        'palestine': { theme: 'palestine-theme', activeClass: 'active-palestine', emptyMsg: 'جاري جمع الوثائق والأدلة لمركز فلسطين...' },
+        'military': { theme: 'military-theme', activeClass: 'active-military', emptyMsg: 'لا توجد عمليات عسكرية مرصودة في هذه اللحظة.' },
+        'losses': { theme: 'losses-theme', activeClass: 'active-losses', emptyMsg: 'جاري حصر الخسائر والأدلة الجنائية...' }
+    };
 
-    <div id="payment-overlay">
-        <div class="payment-box">
-            <i class="fa-solid fa-lock fa-3x" style="color:var(--gold); margin-bottom:20px;"></i>
-            <h3>Period Ended</h3>
-            <p>To continue accessing the 15-year deep archives and verified content:</p>
-            <button onclick="payPi()" style="background:var(--gold); color:black; font-weight:bold; padding:15px 30px;">
-                Pay 5 Pi (90 Days Access)
-            </button>
-            <p style="font-size:12px; margin-top:15px; color:#888;">Subscription renews every 3 months</p>
-        </div>
-    </div>
+    let currentData = []; // للاحتفاظ بالبيانات لفتحها في النافذة المنبثقة
 
-    <script>
-        // 1. إدارة الوقت والاشتراك (3 أيام تجربة)
-        const TRIAL_PERIOD = 3 * 24 * 60 * 60 * 1000;
-        let startTime = localStorage.getItem('installDate') || Date.now();
-        localStorage.setItem('installDate', startTime);
+    // دالة الجلب الآلي للبيانات وتفادي الأعطال
+    async function loadFeed(fileName, type) {
+        // إعادة ضبط أزرار التبويبات
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.className = 'tab-btn'; // مسح الكلاسات النشطة
+        });
+        document.getElementById(`btn-${type}`).classList.add(config[type].activeClass);
 
-        function checkSubscription() {
-            if (Date.now() - startTime > TRIAL_PERIOD && !localStorage.getItem('isPaid')) {
-                document.getElementById('payment-overlay').style.display = 'flex';
+        const container = document.getElementById('feed-container');
+        container.innerHTML = `<p style="text-align:center; grid-column: 1 / -1; color:#888;">جاري الاتصال بقاعدة البيانات الآلية واستخراج الوثائق...</p>`;
+
+        try {
+            // جلب البيانات من مسار data
+            const response = await fetch(`./data/${fileName}`);
+            if (!response.ok) throw new Error('File not found');
+            
+            currentData = await response.json();
+            
+            if (currentData.length === 0) {
+                container.innerHTML = `<p style="text-align:center; grid-column: 1 / -1; color:#888;">${config[type].emptyMsg}</p>`;
+                return;
             }
-        }
-        setInterval(checkSubscription, 60000);
 
-        // 2. محرك البحث والتحليل (يدعم 15 عاماً والحيادية)
-        function showSection(type) {
-            let content = "";
-            if(type === 'palestine') {
-                content = renderPalestine();
-            } else {
-                content = renderGeneral(type);
-            }
-            document.getElementById('content-area').innerHTML = content;
-        }
+            container.innerHTML = ''; // تفريغ الحاوية
 
-        function renderPalestine() {
-            return `
-                <div class="news-item" style="border-left-color: var(--palestine);">
-                    <h3 style="color:var(--palestine);">Palestine Documentation Center</h3>
-                    <p>AI analyzing 15 years of data from East & West sources...</p>
-                    <div class="comparison-box">
-                        <div class="view east"><strong>Eastern View:</strong> Comprehensive documentation of ground violations and geopolitical shifts.</div>
-                        <div class="view west"><strong>Western View:</strong> Official statements vs. media coverage analysis.</div>
+            // رسم البطاقات
+            currentData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = `card ${config[type].theme}`;
+                card.onclick = () => openModal(index, type);
+
+                // تحديد شكل الوسام بناءً على البيانات (التحليل السيادي)
+                let badgeHTML = '';
+                if (item.truth_audit && item.truth_audit.is_blacklisted) {
+                    badgeHTML = `<span class="card-badge badge-red">⚠️ مصدر من (غيروا الحقيقة) - تم رصد تضليل</span>`;
+                } else if (item.truth_audit && item.truth_audit.status.includes('صوت يتعرض')) {
+                    badgeHTML = `<span class="card-badge badge-green">✅ صوت حر مستهدف موثق</span>`;
+                } else if (type === 'banned') {
+                    badgeHTML = `<span class="card-badge badge-red">🚫 تم استرداده من الحظر</span>`;
+                }
+
+                const title = item.title || 'تقرير ميداني عاجل';
+                const snippet = item.content ? item.content.substring(0, 100) + '...' : '';
+
+                card.innerHTML = `
+                    ${badgeHTML}
+                    <h3 class="card-title">${title}</h3>
+                    <p style="font-size: 0.9rem; color: #ccc;">${snippet}</p>
+                    <div class="card-meta">
+                        <span>المصدر: ${item.source || 'غير محدد'}</span>
+                        <span>${item.timestamp || ''}</span>
                     </div>
-                    <div class="truth-zone">
-                        <strong><i class="fa-solid fa-check-double"></i> Verified Ground Truth:</strong>
-                        Actual evidence, field testimonies, and satellite imagery debunking false narratives.
-                    </div>
-                    <div class="download-group">
-                        <button onclick="download('topic')" style="background:#444; color:white;">Download Topic (PDF)</button>
-                        <button onclick="download('all')" style="background:var(--palestine); color:white;">Download Full Palestine Archive</button>
-                    </div>
-                </div>
-            `;
+                `;
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Radar Sync Error:", error);
+            container.innerHTML = `<p style="text-align:center; grid-column: 1 / -1; color:#ff5252;">لم يتم إنشاء ملف <b>${fileName}</b> بعد بواسطة محرك البايثون. النظام جاهز وبانتظار البيانات الميدانية.</p>`;
+        }
+    }
+
+    // دالة عرض الوثيقة الشاملة (بكل تفاصيلها دون اختزال)
+    function openModal(index, type) {
+        const item = currentData[index];
+        const modalBody = document.getElementById('modal-body');
+        
+        let html = `<h2 style="margin-bottom: 20px; color: #fff;">${item.title || 'تفاصيل التوثيق'}</h2>`;
+
+        // 1. كشف المستور / الرد النوعي (يظهر إذا كان هناك تضليل)
+        if (item.truth_audit && item.truth_audit.retaliation && Object.keys(item.truth_audit.retaliation).length > 0) {
+            const ret = item.truth_audit.retaliation;
+            html += `
+            <div class="doc-section retaliation-box">
+                <h3>🚫 كشف المستور (الرد النوعي)</h3>
+                <p><b>الهدف الحقيقي:</b> ${ret.search_target || 'غير محدد'}</p>
+                <p><b>تحليل الدوافع:</b> ${item.truth_audit.motives ? item.truth_audit.motives.hidden_agenda : 'رصد أجندة موجهة'}</p>
+                <p><b>التوجيه الميداني:</b> ${ret.action || 'تم سحب الرواية البديلة من مصادر حرة'}</p>
+            </div>`;
         }
 
-        function renderGeneral(type) {
-            return `
-                <div class="news-item">
-                    <h3>${type.toUpperCase()} - Radar Analysis</h3>
-                    <p>Scanning global networks (Telegram, X, TikTok) for censored data...</p>
-                    <div class="comparison-box">
-                        <div class="view east"><strong>East (China/Russia/BRICS):</strong> Loading divergent perspective...</div>
-                        <div class="view west"><strong>West (USA/Europe):</strong> Loading mainstream narrative...</div>
-                    </div>
-                    <div class="truth-zone" style="background:#111;">
-                        <strong>AI Logic Analysis:</strong> Detecting contradictions in official reports using 15-year historical context.
-                    </div>
-                </div>
-            `;
+        // 2. النبض الإنساني (استعادة الهوية)
+        if (item.human_stories && item.human_stories.length > 0) {
+            html += `
+            <div class="doc-section human-box">
+                <h3>👥 النبض الإنساني واستعادة الهوية</h3>`;
+            item.human_stories.forEach(story => {
+                html += `<p>• <b>${story.name}</b> (${story.profession}) - موثق من المصادر الأهلية.</p>`;
+            });
+            html += `</div>`;
         }
 
-        function switchLang() {
-            const lang = document.getElementById('lang-switcher').value;
-            alert("Switching interface to: " + lang + ". AI Translation active.");
+        // 3. المحتوى الأصلي
+        html += `
+        <div class="doc-section">
+            <h3>📝 المحتوى الميداني الموثق</h3>
+            <p>${item.content || 'لا يوجد نص مرفق'}</p>
+            ${item.historical_link ? `<p style="margin-top:10px; font-size:0.85rem; color:var(--text-muted);">🕰️ <b>العمق التاريخي:</b> ${item.historical_link}</p>` : ''}
+            ${item.legal_context ? `<p style="margin-top:5px; font-size:0.85rem; color:#90a4ae;">⚖️ <b>الموقف القانوني (ICJ):</b> ${item.legal_context}</p>` : ''}
+        </div>`;
+
+        // 4. الدليل الجنائي الرقمي (Forensic)
+        if (item.forensic) {
+            html += `
+            <div class="doc-section">
+                <h3>🔍 التوثيق الجنائي (تشفير غير قابل للتلاعب)</h3>
+                <p><b>بصمة التوثيق (Digital Hash):</b> <span class="tech-font">${item.forensic.digital_hash || item.forensic.hash}</span></p>
+                <p><b>النطاق المكاني/الزمني:</b> ${item.forensic.location || 'موثق'} | ${item.forensic.verified_at || item.forensic.timestamp}</p>
+            </div>`;
         }
 
-        function download(mode) {
-            alert("Encrypting and preparing your secure download: " + mode);
-        }
+        modalBody.innerHTML = html;
+        document.getElementById('document-modal').style.display = 'flex';
+    }
 
-        window.onload = checkSubscription;
-    </script>
+    // إغلاق النافذة المنبثقة
+    function closeModal() {
+        document.getElementById('document-modal').style.display = 'none';
+    }
+
+    // إغلاق النافذة عند الضغط خارجها
+    window.onclick = function(event) {
+        const modal = document.getElementById('document-modal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // التشغيل الآلي عند تحميل الصفحة (تحميل الأخبار المحظورة أولاً كما طلبت)
+    window.onload = () => {
+        document.getElementById('btn-banned').click();
+    };
+</script>
+
 </body>
 </html>
