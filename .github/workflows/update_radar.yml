@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-radars:
+  run-radars: # هنا يجب أن تكون هناك مسافتان في بداية السطر
     runs-on: ubuntu-latest
     
     steps:
