@@ -147,7 +147,8 @@ if __name__ == "__main__":
     results = radar.process_military_data(mock_combat_data)
     
     # الحفظ في مجلد data بدون التدخل في عمل الأقسام الأخرى
-    with open('../data/military_feed.json', 'w', encoding='utf-8') as f:
+    with open('data/military_feed.json', 'w', ... )
+ as f:
         json.dump(results, f, ensure_ascii=False, indent=4)
         
     print(f"تم بنجاح! تم تحليل وتوثيق {len(results)} عمليات عسكرية.")
