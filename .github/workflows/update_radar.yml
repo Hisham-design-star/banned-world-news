@@ -34,9 +34,11 @@ jobs:
 
     # 4. حفظ النتائج الجديدة في مجلد data ونشرها
     - name: Commit and Push New Data
-      run: |
-        git config --local user.email "radar-bot@bannednews.com"
-        git config --local user.name "Radar-Auto-Bot"
-        git add data/*.json
-        git commit -m "Auto-update: تم التقاط وتوثيق أخبار ميدانية جديدة" || echo "لا توجد أخبار جديدة حالياً"
-        git push
+     run: |
+          git config --local user.email "radar-bot@bannednews.com"
+          git config --local user.name "Radar-Bot"
+          git add data/*.json
+          git commit -m "تم التقاط وتوثيق أخبار ميدانية جديدة" || echo "لا توجد تغييرات"
+          git pull --rebase origin main # إضافة هذه الخطوة لجلب التحديثات أولاً ومنع التعارض
+          git push origin main
+
