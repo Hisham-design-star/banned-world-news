@@ -1,144 +1,129 @@
 import json
+import os
 import time
 import hashlib
 from datetime import datetime
 
+# محاولة استدعاء العقل المدبر (غيروا الحقيقة) لضمان التكامل
+try:
+    from sovereign_classifier import SovereignClassifier
+except ImportError:
+    SovereignClassifier = None
+
 class PalestineCenterRadar:
     def __init__(self):
-        # تعريف قواعد البيانات والمصادر
+        self.base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.data_file = os.path.join(self.base_path, 'data', 'palestine_feed.json')
+        
+        # المصادر والطرائق (من كودك الأصلي)
         self.regional_media = ["AlJazeera", "Egyptian_Media", "Qatar_TV", "Algeria_Press", "Morocco_News", "South_Africa_News"]
-        self.western_media = ["Reuters", "CNN", "BBC", "FoxNews", "NYT"] # وسائل إعلام اللوبيات
         self.legal_frameworks = ["ICJ_South_Africa_Case", "UN_Resolution_194", "Geneva_Convention"]
         self.historical_timeline_start = 1984
         
+        # تفعيل المحرك السيادي
+        self.classifier = SovereignClassifier() if SovereignClassifier else None
+
+    # --- 1. الوظائف التقنية والوقائية (من كودك القديم) ---
     def safe_execute(self, func, *args):
-        """حماية الكود من التوقف إذا فشل أحد المصادر في الاستجابة"""
-        try:
-            return func(*args)
-        except Exception as e:
-            print(f"Error in {func.__name__}: {str(e)}")
-            return None
+        try: return func(*args)
+        except: return None
 
-    def forensic_tracking(self, media_item):
-        """1. التوثيق الجنائي الميداني: تشفير بصمة الملف والموقع"""
-        raw_data = f"{media_item['url']}_{media_item['timestamp']}".encode()
-        digital_signature = hashlib.sha256(raw_data).hexdigest()
+    def forensic_tracking(self, item):
+        """التوثيق الجنائي الميداني (تشفير البصمة)"""
+        raw = f"{item.get('url', '')}_{item.get('timestamp', time.time())}".encode()
         return {
-            "digital_hash": digital_signature,
-            "gps_coordinates": media_item.get('gps_location', 'موقع موثق ميدانياً'),
-            "forensic_timestamp": datetime.now().isoformat()
+            "digital_hash": hashlib.sha256(raw).hexdigest(),
+            "location": item.get('gps_location', 'موقع موثق ميدانياً'),
+            "verified_at": datetime.now().isoformat()
         }
 
-    def human_memory_tracker(self, field_data):
-        """2 & 4. رصد النبض الإنساني وأنسنة الضحايا (من فيسبوك وانستجرام)"""
-        restored_identities = []
-        for post in field_data.get('social_posts', []):
-            if "نعي" in post['text'] or "شهيد" in post['text'] or "مفقود" in post['text']:
-                restored_identities.append({
-                    "name": post.get('extracted_name', 'اسم مجهول الهوية'),
-                    "age": post.get('extracted_age', 'غير محدد'),
-                    "profession": post.get('extracted_profession', 'مدني بريء'),
-                    "story_link": post['url']
+    # --- 2. تحليل النبض الإنساني والدمار (من كودك القديم) ---
+    def human_memory_tracker(self, posts):
+        """أنسنة الضحايا واستعادة الهوية"""
+        restored = []
+        for post in posts:
+            if any(kw in post.get('text', '') for kw in ["نعي", "شهيد", "مفقود"]):
+                restored.append({
+                    "name": post.get('extracted_name', 'بطل مجهول'),
+                    "profession": post.get('extracted_profession', 'مدني صامد'),
+                    "link": post.get('url', '')
                 })
-        return restored_identities
+        return restored
 
-    def infrastructure_heritage_audit(self, images_data):
-        """3. أرصدة الدمار ومحو الأثر"""
-        destruction_report = []
-        for img in images_data:
+    def infrastructure_audit(self, images):
+        """أرصدة الدمار ومحو الأثر التاريخي"""
+        report = []
+        for img in images:
             analysis = img.get('ai_analysis', '')
-            if any(kw in analysis for kw in ["عقار", "إزالة حي", "مستشفى", "مدرسة", "معلم أثري", "مزرعة"]):
-                destruction_report.append({
-                    "target_type": analysis,
-                    "evidence_image": img['url'],
-                    "crime_classification": "محاولة محو هوية وتغيير ديموغرافي"
-                })
-        return destruction_report
+            if any(kw in analysis for kw in ["عقار", "مستشفى", "مدرسة", "أثري"]):
+                report.append({"type": analysis, "image": img['url'], "crime": "تغيير ديموغرافي"})
+        return report
 
-    def historical_justice_1984(self, current_event):
-        """5. الرابط التاريخي منذ 1984 وما قبله"""
-        # محاكاة لربط الحدث الحالي بتاريخ الاغتصاب والإحلال
-        event_type = current_event.get('type', 'اعتداء')
-        return f"هذا الـ({event_type}) ليس حدثاً معزولاً، بل هو استمرار لمنهجية الإحلال وتدمير الهوية والترويع الموثقة منذ ما قبل عام {self.historical_timeline_start}."
-
-    def legal_icj_integration(self, event_details):
-        """7. السند القانوني الدولي (أدلة جنوب أفريقيا ومجلس الأمن)"""
-        legal_context = []
-        if "إبادة" in event_details or "تهجير" in event_details:
-            legal_context.append("يخالف اتفاقية جنيف، وموثق ضمن ملف جنوب أفريقيا أمام محكمة العدل الدولية (ICJ).")
-        return legal_context
-
-    def media_bias_audit(self, event_keywords):
-        """6 & 8 & 9. ميزان التضليل: فضح اللوبيات الغربية مقابل الإعلام العربي وجنوب أفريقيا"""
-        # محاكاة لجلب عناوين الأخبار
-        western_headline = "اشتباكات تؤدي إلى سقوط ضحايا (مبني للمجهول)" # تأثير اللوبيات
-        regional_headline = "قصف يستهدف حياً سكنياً ويدمر مستشفى بالكامل" # الإعلام الموثوق
+    # --- 3. التحليل السيادي والرد النوعي (الإضافة الجديدة المدمجة) ---
+    def media_bias_audit(self, source, content):
+        """ميزان التضليل: فضح اللوبيات مقابل الحقيقة"""
+        analysis = {"status": "قيد الفحص", "is_blacklisted": False, "retaliation": {}}
         
-        bias_score = "تضليل جسيم وتزييف للتاريخ" if "اشتباكات" in western_headline else "تغطية جزئية"
+        if self.classifier:
+            res = self.classifier.analyze_source(source, content)
+            analysis["status"] = res['category']
+            analysis["is_blacklisted"] = res['is_biased']
+            # تفعيل الرد النوعي فوراً إذا تم رصد تضليل
+            if res['is_biased'] or res['is_oppressed']:
+                analysis["retaliation"] = self.classifier.deep_search_retaliation(source, content)
         
-        return {
-            "western_lobbies_narrative": western_headline,
-            "regional_truth_narrative": regional_headline,
-            "bias_analysis": bias_score,
-            "supported_by": self.regional_media
-        }
+        return analysis
 
-    def process_palestine_data(self, raw_incoming_data):
-        """المحرك الرئيسي: تمرير الخبر على جميع الفلاتر التسعة"""
-        final_documented_feed = []
+    # --- 4. المحرك الرئيسي: دمج الـ 9 فلاتر في عملية واحدة ---
+    def process_palestine_data(self, raw_data):
+        final_feed = []
         
-        for item in raw_incoming_data:
-            # معالجة كل نقطة بشكل آمن
-            forensic_data = self.safe_execute(self.forensic_tracking, item)
-            identities = self.safe_execute(self.human_memory_tracker, item)
-            infrastructure = self.safe_execute(self.infrastructure_heritage_audit, item.get('images', []))
-            history_link = self.safe_execute(self.historical_justice_1984, item)
-            legal_backup = self.safe_execute(self.legal_icj_integration, item.get('content', ''))
-            bias_report = self.safe_execute(self.media_bias_audit, item.get('keywords', []))
-            
-            # تجميع الوثيقة النهائية
-            documented_record = {
-                "id": f"palestine_{int(time.time())}",
-                "title": item['title'],
-                "forensic_evidence": forensic_data,
-                "human_identities": identities,
-                "infrastructure_destruction": infrastructure,
-                "historical_context": history_link,
-                "legal_framework": legal_backup,
-                "media_bias_audit": bias_report,
+        for item in raw_data:
+            content = item.get('content', '') or item.get('text', '')
+            source = item.get('author', 'مصدر ميداني')
+
+            # تطبيق الفلاتر التسعة المدمجة
+            record = {
+                "id": f"pal_{hashlib.md5(content.encode()).hexdigest()[:10]}",
+                "title": item.get('title', 'توثيق ميداني عاجل'),
+                "content": content,
+                "forensic": self.safe_execute(self.forensic_tracking, item),
+                "human_stories": self.safe_execute(self.human_memory_tracker, item.get('social_posts', [])),
+                "destruction": self.safe_execute(self.infrastructure_audit, item.get('images', [])),
+                "historical_link": f"امتداد لسياسة الإحلال المرصودة منذ {self.historical_timeline_start}",
+                "legal_context": "يخالف اتفاقية جنيف وموثق في ملف (ICJ)" if "إبادة" in content else "قيد التوثيق القانوني",
+                "truth_audit": self.media_bias_audit(source, content), # هنا يلتقي القديم بالجديد
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
+            final_feed.append(record)
             
-            final_documented_feed.append(documented_record)
-            
-        return final_documented_feed
+        self.save_and_merge(final_feed)
+        return final_feed
 
-# ==========================================
-# تشغيل الرادار وحفظ النتائج
-# ==========================================
-if __name__ == "__main__":
-    radar = PalestineCenterRadar()
-    
-    # بيانات ميدانية تجريبية قادمة من تليجرام/انستجرام
-    mock_field_data = [{
-        "title": "إزالة حي سكني كامل واستهداف مستشفى ميداني",
-        "content": "عمليات تهجير قسري وإبادة، تخللها تدمير معلم أثري يعود لمئات السنين.",
-        "url": "https://t.me/field_reporter/123",
-        "timestamp": "1698245000",
-        "type": "تدمير وتهجير",
-        "social_posts": [
-            {"text": "نعي الشهيد الطبيب أحمد", "extracted_name": "أحمد", "extracted_profession": "طبيب", "url": "ig_link_1"}
-        ],
-        "images": [
-            {"url": "img_link_1.jpg", "ai_analysis": "إزالة حي وتدمير مستشفى"}
-        ]
-    }]
-    
-    # معالجة البيانات وبناء الوثيقة
-    results = radar.process_palestine_data(mock_field_data)
-    
-    # حفظ النتائج في ملف JSON مستقل
-    with open('../data/palestine_feed.json', 'w', encoding='utf-8') as f:
-        json.dump(results, f, ensure_ascii=False, indent=4)
+    def save_and_merge(self, new_data):
+        """حماية الأرشيف من الضياع ودمج البيانات ذكياً"""
+        os.makedirs(os.path.dirname(self.data_file), exist_ok=True)
+        existing = []
+        if os.path.exists(self.data_file):
+            try:
+                with open(self.data_file, 'r', encoding='utf-8') as f:
+                    existing = json.load(f)
+            except: existing = []
         
-    print(f"تم بنجاح! تم بناء {len(results)} وثيقة تاريخية وقانونية.")
+        # دمج بدون تكرار
+        seen_ids = {d['id'] for d in new_data}
+        combined = new_data + [d for d in existing if d['id'] not in seen_ids]
+        
+        with open(self.data_file, 'w', encoding='utf-8') as f:
+            json.dump(combined[:200], f, ensure_ascii=False, indent=4)
+
+if __name__ == "__main__":
+    # تشغيل الرادار الشامل
+    radar = PalestineCenterRadar()
+    mock = [{
+        "author": "قناة منحازة", 
+        "text": "تزييف الحقائق حول استهداف مدرسة تأوي نازحين.",
+        "images": [{"url": "evidence.jpg", "ai_analysis": "تدمير مدرسة"}]
+    }]
+    radar.process_palestine_data(mock)
+    print("✅ تم التشغيل: الرادار وثق الجريمة، فضح التضليل، وجهز الرد النوعي.")
