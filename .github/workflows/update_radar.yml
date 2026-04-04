@@ -1,44 +1,45 @@
 name: Global News Radar Engine
 
-# متى يعمل هذا المحرك؟
 on:
   schedule:
-    - cron: '0 */4 * * *' # يعمل آلياً كل 4 ساعات لتحديث الأخبار
-  workflow_dispatch: # يضيف لك زراً لتشغيله يدوياً في أي وقت تريد
+    - cron: '0 */4 * * *' # يعمل آلياً كل 4 ساعات كما في طلبك الأخير
+  workflow_dispatch: # يتيح لك التشغيل اليدوي من تبويب Actions
 
 jobs:
   run-radars:
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: 1. سحب ملفات المشروع
-      uses: actions/checkout@v3
+      - name: 1. سحب ملفات المشروع
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # ضروري لضمان نجاح عملية الـ Push بدون تعارض
 
-    - name: 2. تجهيز بيئة بايثون
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: 2. تجهيز بيئة بايثون
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' # الترقية للإصدار الأحدث كما في مسودتك
 
-    # 3. تشغيل المحركات الثلاثة بالتسلسل
-    - name: Run Palestine Center Radar
-      run: python scripts/palestine_center.py
-      continue-on-error: true # لضمان عدم توقف النظام إذا تأخر أحد المصادر
+      # 3. تشغيل المحركات الثلاثة بالتسلسل مع الحماية من الانهيار
+      - name: Run Palestine Center Radar
+        run: python scripts/palestine_center.py
+        continue-on-error: true # يضمن استمرار العمل حتى لو تعطل هذا المصدر
 
-    - name: Run Military Ops Radar
-      run: python scripts/military_ops.py
-      continue-on-error: true
+      - name: Run Military Ops Radar
+        run: python scripts/military_ops.py
+        continue-on-error: true
 
-    - name: Run Banned News Radar
-      run: python scripts/banned_news.py # تأكد أن هذا هو اسم ملف الأخبار المحظورة في مجلدك
-      continue-on-error: true
+      - name: Run Banned News Radar
+        run: python scripts/banned_news.py
+        continue-on-error: true
 
-    # 4. حفظ النتائج الجديدة في مجلد data ونشرها
-    - name: Commit and Push New Data
-      run: |
+      # 4. حفظ النتائج وتجاوز خطأ التعارض (Conflict Fix)
+      - name: Commit and Push New Data
+        run: |
           git config --local user.email "radar-bot@bannednews.com"
           git config --local user.name "Radar-Bot"
           git add data/*.json
-          git commit -m "تم التقاط وتوثيق أخبار ميدانية جديدة" || echo "No changes to commit"
-          git pull --rebase origin main
+          # جلب التحديثات أولاً لمنع خطأ [rejected] الذي ظهر سابقاً
+          git pull --rebase origin main 
+          git commit -m "تحديث تلقائي: تم التقاط وتوثيق أخبار ميدانية جديدة" || echo "No changes to commit"
           git push origin main
-        
