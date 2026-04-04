@@ -1,0 +1,42 @@
+name: Global News Radar Engine
+
+# متى يعمل هذا المحرك؟
+on:
+  schedule:
+    - cron: '0 */4 * * *' # يعمل آلياً كل 4 ساعات لتحديث الأخبار
+  workflow_dispatch: # يضيف لك زراً لتشغيله يدوياً في أي وقت تريد
+
+jobs:
+  run-radars:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. سحب ملفات المشروع
+      uses: actions/checkout@v3
+
+    - name: 2. تجهيز بيئة بايثون
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    # 3. تشغيل المحركات الثلاثة بالتسلسل
+    - name: Run Palestine Center Radar
+      run: python scripts/palestine_center.py
+      continue-on-error: true # لضمان عدم توقف النظام إذا تأخر أحد المصادر
+
+    - name: Run Military Ops Radar
+      run: python scripts/military_ops.py
+      continue-on-error: true
+
+    - name: Run Banned News Radar
+      run: python scripts/banned_news.py # تأكد أن هذا هو اسم ملف الأخبار المحظورة في مجلدك
+      continue-on-error: true
+
+    # 4. حفظ النتائج الجديدة في مجلد data ونشرها
+    - name: Commit and Push New Data
+      run: |
+        git config --local user.email "radar-bot@bannednews.com"
+        git config --local user.name "Radar-Auto-Bot"
+        git add data/*.json
+        git commit -m "Auto-update: تم التقاط وتوثيق أخبار ميدانية جديدة" || echo "لا توجد أخبار جديدة حالياً"
+        git push
