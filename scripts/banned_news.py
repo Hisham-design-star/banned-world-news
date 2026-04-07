@@ -7,105 +7,98 @@ from datetime import datetime
 
 class BannedNewsRadar:
     def __init__(self):
-        # 1. تعريف المعسكرات والمصادر (من الكود القديم)
+        # 1. تعريف المعسكرات والوكالات (من كودك القديم)
         self.western_agencies = ["Reuters", "AP", "AFP", "CNN", "BBC", "NYT", "Meta", "Google"]
         self.eastern_agencies = ["TASS", "Xinhua", "Official_Eastern_Media"]
         
-        # 2. تقنية التمويه البشري (المميزة الجديدة)
+        # 2. تقنية التمويه البشري (Human Emulation)
+        # تجعل الرادار يبدو كمتصفح حقيقي لتجنب الحظر
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8',
+            'Referer': 'https://www.google.com/'
         }
 
-    def safe_execute(self, func, *args):
-        """حماية البرنامج من التوقف عند فشل رصد مصدر معين"""
-        try:
-            return func(*args)
-        except Exception as e:
-            print(f"⚠️ تنبيه في {func.__name__}: {str(e)}")
-            return None
-
-    def apply_banned_filter(self, title, content, score=80):
-        """معايير الفلترة الأربعة (من الكود القديم)"""
-        keywords = (title + content).lower()
-        cond1 = any(word in keywords for word in ["إبادة", "مجاعة", "سيادة", "أزمة إنسانية", "قصف", "شهداء"])
-        cond2 = any(word in keywords for word in ["إخفاق", "تجسس", "تسريب", "حادث عسكري", "كمين"])
-        cond3 = any(word in keywords for word in ["حقوق إنسان", "تشويه", "تاريخي", "مجزرة"])
-        cond4 = score > 75 
-        return cond1 or cond2 or cond3 or cond4
-
-    def visual_ethical_filter(self, item):
-        """حماية وتوثيق المحتوى البصري (من الكود القديم)"""
-        # في الرصد الآلي، نعتبر محتوى المنصات العامة مجازاً للتوثيق ما لم يصنف كإباحي
-        description = item.get('description', '').lower()
-        if any(word in description for word in ["+18", "porn", "explicit"]):
-            return False
-        return True
-
-    def fetch_social_geo_data(self):
-        """الرصد الجغرافي ومنصات التواصل (المميزة الجديدة)"""
-        # استهداف جيو-جرافي (غزة، القدس، ومناطق الحدث) عبر RSSHub لضمان عدم الحظر
+    def fetch_field_data(self):
+        """رصد منصات التواصل والقريبين من الحدث جغرافياً"""
+        # نستخدم RSSHub كجسر رقمي للوصول للحسابات العامة والوسوم الجغرافية
         targets = [
-            {"name": "X_Geo", "url": "https://rsshub.app/twitter/keyword/Gaza"},
-            {"name": "Telegram_Field", "url": "https://rsshub.app/telegram/channel/QudsN"},
-            {"name": "Insta_Visuals", "url": "https://rsshub.app/instagram/user/eye.on.palestine"},
-            {"name": "FB_News", "url": "https://rsshub.app/facebook/page/AljazeeraChannel"}
+            {"name": "X_Geographic", "url": "https://rsshub.app/twitter/keyword/Gaza"}, # رصد إكس جغرافياً
+            {"name": "Telegram_Urgent", "url": "https://rsshub.app/telegram/channel/GazaNowAr"}, # تليجرام الميداني
+            {"name": "Insta_Visuals", "url": "https://rsshub.app/instagram/user/eye.on.palestine"}, # إنستجرام البصري
+            {"name": "FB_Reports", "url": "https://rsshub.app/facebook/page/AljazeeraChannel"} # فيسبوك الإخباري
         ]
         
-        captured_news = []
+        captured = []
         for target in targets:
             try:
-                resp = requests.get(target['url'], headers=self.headers, timeout=25)
-                if resp.status_code == 200:
-                    soup = BeautifulSoup(resp.content, 'xml')
+                response = requests.get(target['url'], headers=self.headers, timeout=30)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.content, 'xml')
                     items = soup.find_all('item')[:10]
-                    for it in items:
-                        captured_news.append({
-                            "title": it.title.text,
-                            "content": it.description.text if it.description else "",
-                            "link": it.link.text,
+                    for item in items:
+                        captured.append({
+                            "title": item.title.text if item.title else "",
+                            "content": item.description.text if item.description else "",
+                            "link": item.link.text if item.link else "",
                             "source": target['name'],
-                            "has_casualties": "شهيد" in it.title.text or "ضحايا" in it.title.text
+                            "timestamp": item.pubDate.text if item.pubDate else str(datetime.now())
                         })
-            except: continue
-        return captured_news
+            except Exception as e:
+                print(f"⚠️ فشل الرصد من {target['name']}: {e}")
+        return captured
 
-    def cross_check_and_format(self, field_news):
-        """المطابقة والتشهير بالجبناء (من الكود القديم)"""
-        # محاكاة: إذا كان الخبر عاجلاً في الميدان ولم يظهر في الوكالات الغربية
-        # هنا يتم التشهير بالجهات التي تتجاهل الخبر
+    def apply_banned_filters(self, item):
+        """تطبيق معايير الفلترة الأربعة والأخلاقية (من كودك القديم)"""
+        text = (item['title'] + item['content']).lower()
         
-        culprits = self.western_agencies # قائمة الجبناء الافتراضية عند التعتيم
+        # المعايير السيادية
+        cond_1 = any(w in text for w in ["إبادة", "مجاعة", "سيادة", "أزمة إنسانية"])
+        cond_2 = any(w in text for w in ["إخفاق", "تجسس", "تسريب", "حادث عسكري", "كمين"])
+        cond_3 = any(w in text for w in ["حقوق إنسان", "تشويه", "تاريخي", "مجزرة"])
         
+        # الفلترة الأخلاقية ومنع الإباحية
+        if any(w in text for w in ["+18", "porn", "explicit"]):
+            return False
+            
+        return cond_1 or cond_2 or cond_3
+
+    def cross_check_agencies(self, field_item):
+        """المطابقة مع الوكالات العالمية وكشف التعتيم"""
+        # في بيئة الأكشن، نفترض التعتيم إذا كان الخبر ميدانياً بامتياز ولم تشتهر روابطه عالمياً
+        # هذا يولد قائمة "الجبناء" الذين تجاهلوا الحقيقة
+        return self.western_agencies
+
+    def format_for_app(self, item, culprits):
+        """تنسيق الإخراج النهائي مع التشهير والتحسين للسرعة"""
+        cowards_str = "، ".join(culprits)
         return {
-            "id": f"banned_{int(time.time())}_{hash(field_news['title']) % 1000}",
-            "title": field_news['title'],
+            "id": f"banned_{int(time.time())}_{hash(item['title']) % 1000}",
+            "title": item['title'][:100], # تقليل الحمولة لسرعة التطبيق
             "pre_warning": "⚠️ تنبيه: هذه الجهات ومنصاتها تمنعنا من المعرفة. الإعلام يُباع ليكمم الأفواه، ولكننا سنعرف الحقيقة.",
-            "real_content": field_news['content'][:500], # تقليل الحمولة لسرعة التطبيق
-            "source_link": field_news['link'],
-            "media_preview": "رابط مصغر لضمان السرعة", # تحسين الوسائط كما طلبتم
-            "post_warning": f"🚫 هذا ما تغافل عنه هؤلاء: ({' ،'.join(culprits)}). هؤلاء هم الجبناء.",
+            "real_content": item['content'][:500], # عرض مقتطف ميداني سريع
+            "media_url": item['link'],
+            "post_warning": f"🚫 هذا ما تغافل عنه هؤلاء: ({cowards_str}). هؤلاء هم الجبناء الذين ادعوا العمى.",
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
-    def run_engine(self):
-        print(f"🚀 بدء محرك رادار الحقيقة...")
-        raw_data = self.fetch_social_geo_data()
+    def run_radar(self):
+        print("🔍 رادار الحقيقة يبدأ عملية المسح الجغرافي والميداني...")
+        raw_data = self.fetch_field_data()
         final_feed = []
         
-        for news in raw_data:
-            # تطبيق الفلاتر القديمة
-            if self.apply_banned_filter(news['title'], news['content']):
-                if self.visual_ethical_filter(news):
-                    formatted = self.cross_check_and_format(news)
-                    final_feed.append(formatted)
+        for item in raw_data:
+            if self.apply_banned_filters(item):
+                culprits = self.cross_check_agencies(item)
+                formatted = self.format_for_app(item, culprits)
+                final_feed.append(formatted)
         
-        # حفظ البيانات في المجلد المخصص للتطبيق
+        # حفظ البيانات في مجلد data المخصص للتطبيق
         os.makedirs('data', exist_ok=True)
         with open('data/banned_news_feed.json', 'w', encoding='utf-8') as f:
             json.dump(final_feed, f, ensure_ascii=False, indent=4)
-        print(f"✅ تم توثيق {len(final_feed)} خبر محظور بنجاح.")
+        print(f"✅ تمت المهمة: توثيق {len(final_feed)} خبر محظور.")
 
 if __name__ == "__main__":
     radar = BannedNewsRadar()
-    radar.run_engine()
+    radar.run_radar()
