@@ -5,7 +5,7 @@ on:
     - cron: '0 */4 * * *'
   workflow_dispatch:
 
-# 1. إضافة مهمة جداً لمنح البوت صلاحية حفظ ورفع الملفات إلى المستودع
+# منح الصلاحيات اللازمة للأكشن للقيام بعملية الرفع (Push)
 permissions:
   contents: write
 
@@ -17,7 +17,6 @@ jobs:
       - name: 1. سحب ملفات المشروع
         uses: actions/checkout@v4
         with:
-          ref: main # 2. إجبار الأكشن على استخدام فرع main لتجنب مشكلة الانفصال (Detached HEAD)
           fetch-depth: 0
 
       - name: 2. تجهيز بيئة بايثون
@@ -42,12 +41,15 @@ jobs:
           git config --local user.email "radar-bot@bannednews.com"
           git config --local user.name "Radar Bot"
           
+          # إضافة كافة الملفات الجديدة والمعدلة
           git add .
           
-          if ! git diff --staged --quiet; then
+          # التحقق مما إذا كان هناك شيء جديد فعلياً للحفظ
+          if [ -n "$(git status --porcelain)" ]; then
             git commit -m "تحديث تلقائي: رصد بيانات أخبار جديدة"
-            git pull --rebase origin main
-            git push origin main # 3. تحديد الفرع صراحة أثناء الرفع لضمان نجاح العملية
+            # السحب مع دمج التغييرات بشكل آمن وتفضيل الملفات الجديدة في حال التعارض
+            git pull --rebase -X theirs origin main
+            git push origin main
           else
-            echo "لا توجد بيانات أو أخبار جديدة لرفعها في هذا التشغيل."
+            echo "لا توجد بيانات جديدة تم رصدها في هذا التشغيل."
           fi
