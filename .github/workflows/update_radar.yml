@@ -1,19 +1,18 @@
-name: Global News Radar Engine
+name: Ultimate News Radar Sync
 
 on:
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: '0 */3 * * *' # تشغيل كل 3 ساعات لمواكبة الميدان
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  run-radars:
+  run-radar:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: 1. سحب المشروع
+      - name: 1. جلب الكود
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -23,35 +22,24 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 3. تشغيل محركات الرصد
-        run: |
-          python scripts/palestine_center.py
-          python scripts/military_ops.py
-          python scripts/banned_news.py
-        continue-on-error: true
+      - name: 3. تثبيت المكتبات
+        run: pip install requests beautifulsoup4 lxml
 
-      - name: 4. المزامنة القسرية والرفع (Force Push Strategy)
+      - name: 4. تشغيل الرادار المطور
+        run: python scripts/banned_news.py
+
+      - name: 5. مزامنة البيانات وحل التعارضات قسرياً
         run: |
           git config --local user.email "radar-bot@bannednews.com"
           git config --local user.name "Radar-Engine-Bot"
           
-          # إضافة التغييرات
-          git add .
+          git add data/banned_news_feed.json
           
-          # التحقق من وجود بيانات جديدة
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "تحديث رادار الحقيقة: أرشفة بيانات جديدة"
-            
-            # جلب آخر التحديثات وتطبيق التعديلات فوقها برفق
-            git pull --rebase origin main
-            
-            # في حال فشل الـ rebase بسبب تعارض ملفات JSON، سنفرض نسخة الرادار
-            if [ $? -ne 0 ]; then
-              git rebase --abort
-              git push origin main --force
-            else
-              git push origin main
-            fi
+            git commit -m "رصد جغرافي وتوثيق جديد [Automated]"
+            # التقنية السحرية لمنع الـ 15 خطأ:
+            git pull --rebase --autostash -X theirs origin main
+            git push origin main || git push origin main --force
           else
-            echo "لا توجد بيانات جديدة."
+            echo "لا توجد أخبار محظورة جديدة حالياً."
           fi
