@@ -2,10 +2,9 @@ name: Global News Radar Engine
 
 on:
   schedule:
-    - cron: '0 */4 * * *' # تشغيل كل 4 ساعات
-  workflow_dispatch: # إمكانية التشغيل اليدوي
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
 
-# منح الصلاحيات اللازمة للمحرك للكتابة في المستودع
 permissions:
   contents: write
 
@@ -15,39 +14,43 @@ jobs:
     
     steps:
       - name: 1. سحب الكود المصدري
-        uses: actions/checkout@v4 # تحديث لآخر إصدار لتجنب تحذيرات Node
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 2. تجهيز بيئة بايثون السيادية
+      - name: 2. تجهيز بيئة بايثون
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: 3. تشغيل محركات الرصد (Radars)
+      - name: 3. تشغيل محركات الرصد
         run: |
           python scripts/palestine_center.py
           python scripts/military_ops.py
           python scripts/banned_news.py
-        continue-on-error: true # لضمان استمرار العمل حتى لو فشل أحد الرادارات
+        continue-on-error: true
 
-      - name: 4. المعالجة الجنائية والحفظ (Forensic Commit & Push)
+      - name: 4. الحفظ والرفع الآمن للبيانات
         run: |
           git config --local user.email "radar-bot@bannednews.com"
           git config --local user.name "Radar-Engine-Bot"
           
-          # إضافة كافة التغييرات التي تمت في مجلد data
+          # الحفاظ على التغييرات الجديدة مؤقتاً
           git add .
           
-          # التحقق من وجود بيانات جديدة فعلياً قبل الحفظ
-          if git diff --quiet && git diff --staged --quiet; then
-            echo "لا توجد بيانات جديدة لرصدها."
-          else
-            git commit -m "تحديث رادار الحقيقة: رصد وأرشفة بيانات جديدة"
+          # التحقق من وجود تغييرات حقيقية
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "تحديث رادار الحقيقة: أرشفة بيانات جديدة"
             
-            # السحب مع دمج التغييرات (Rebase) واستخدام استراتيجية Ours 
-            # لضمان عدم توقف المحرك عند حدوث تضارب
-            git pull --rebase --autostash origin main
+            # الحل الجذري: جلب التحديثات ودمجها مع تفضيل الملفات المحلية الجديدة
+            git fetch origin main
+            git rebase -X theirs origin/main
             
+            # الرفع النهائي
             git push origin main
+          else
+            echo "لا توجد بيانات جديدة لرصدها."
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
