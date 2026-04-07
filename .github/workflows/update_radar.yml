@@ -1,18 +1,18 @@
-name: Ultimate News Radar Sync
+name: Global News Radar - Total Sync
 
 on:
   schedule:
-    - cron: '0 */3 * * *' # تشغيل كل 3 ساعات لمواكبة الميدان
+    - cron: '0 */3 * * *' # كل 3 ساعات
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  run-radar:
+  radar-job:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. جلب الكود
+      - name: 1. سحب المشروع
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -22,13 +22,13 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 3. تثبيت المكتبات
+      - name: 3. تثبيت أدوات التمويه والرصد
         run: pip install requests beautifulsoup4 lxml
 
-      - name: 4. تشغيل الرادار المطور
+      - name: 4. تشغيل الرادار السيادي
         run: python scripts/banned_news.py
 
-      - name: 5. مزامنة البيانات وحل التعارضات قسرياً
+      - name: 5. المزامنة القسرية وحل تعارضات الـ 15 خطأ
         run: |
           git config --local user.email "radar-bot@bannednews.com"
           git config --local user.name "Radar-Engine-Bot"
@@ -36,10 +36,10 @@ jobs:
           git add data/banned_news_feed.json
           
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "رصد جغرافي وتوثيق جديد [Automated]"
-            # التقنية السحرية لمنع الـ 15 خطأ:
+            git commit -m "رصد ميداني: أرشفة الأخبار المحظورة [Geo-Sync]"
+            # فرض الدمج وتجاوز أي أخطاء سابقة في السجل
             git pull --rebase --autostash -X theirs origin main
             git push origin main || git push origin main --force
           else
-            echo "لا توجد أخبار محظورة جديدة حالياً."
+            echo "لا توجد تحديثات جديدة حالياً."
           fi
