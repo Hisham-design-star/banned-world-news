@@ -13,41 +13,41 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: 1. سحب الكود (نسخة كاملة)
+      - name: 1. سحب الكود المصدري
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # سحب التاريخ الكامل لتجنب أخطاء الدمج
 
-      - name: 2. بيئة بايثون
+      - name: 2. تجهيز بيئة بايثون
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: 3. تشغيل الرادارات
+      - name: 3. تشغيل محركات الرصد (Radars)
         run: |
           python scripts/palestine_center.py
           python scripts/military_ops.py
           python scripts/banned_news.py
         continue-on-error: true
 
-      - name: 4. فرض حفظ البيانات (الحل الجذري)
+      - name: 4. المعالجة الجنائية والحفظ (الحل الجذري)
         run: |
           git config --local user.email "radar-bot@bannednews.com"
           git config --local user.name "Radar-Engine-Bot"
           
-          # إضافة كل البيانات الجديدة
+          # أولاً: إضافة كل الملفات التي تغيرت أو استجدت
           git add .
           
-          # التحقق من وجود تغييرات
+          # ثانياً: الحفظ المحلي فقط إذا كانت هناك تغييرات
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "تحديث سيادي: أرشفة الأخبار المرصودة"
+            git commit -m "تحديث سيادي: أرشفة الأخبار المرصودة تلقائياً"
             
-            # الحل السحري: سحب التحديثات مع إخفاء التغييرات المحلية مؤقتاً (Stash) 
-            # ثم إعادة دمجها فوق التحديثات القادمة من الخادم
+            # ثالثاً: سحب التحديثات مع إخفاء التغييرات مؤقتاً (Stash) وإعادة دمجها
+            # هذا الأمر يحل مشكلة الـ 15 خطأ بشكل نهائي
             git pull --rebase --autostash origin main
             
-            # الرفع النهائي
+            # رابعاً: الرفع النهائي للبيانات الموثقة
             git push origin main
           else
-            echo "لم يتم رصد أي أخبار جديدة في هذه الدورة."
+            echo "لا توجد بيانات جديدة لرصدها في هذه الدورة."
           fi
