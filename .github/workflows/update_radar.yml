@@ -13,44 +13,41 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: 1. سحب الكود المصدري
+      - name: 1. سحب الكود (نسخة كاملة)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 2. تجهيز بيئة بايثون
+      - name: 2. بيئة بايثون
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: 3. تشغيل محركات الرصد
+      - name: 3. تشغيل الرادارات
         run: |
           python scripts/palestine_center.py
           python scripts/military_ops.py
           python scripts/banned_news.py
         continue-on-error: true
 
-      - name: 4. الحفظ والرفع الآمن للبيانات
+      - name: 4. فرض حفظ البيانات (الحل الجذري)
         run: |
           git config --local user.email "radar-bot@bannednews.com"
           git config --local user.name "Radar-Engine-Bot"
           
-          # الحفاظ على التغييرات الجديدة مؤقتاً
+          # إضافة كل البيانات الجديدة
           git add .
           
-          # التحقق من وجود تغييرات حقيقية
+          # التحقق من وجود تغييرات
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "تحديث رادار الحقيقة: أرشفة بيانات جديدة"
+            git commit -m "تحديث سيادي: أرشفة الأخبار المرصودة"
             
-            # الحل الجذري: جلب التحديثات ودمجها مع تفضيل الملفات المحلية الجديدة
-            git fetch origin main
-            git rebase -X theirs origin/main
+            # الحل السحري: سحب التحديثات مع إخفاء التغييرات المحلية مؤقتاً (Stash) 
+            # ثم إعادة دمجها فوق التحديثات القادمة من الخادم
+            git pull --rebase --autostash origin main
             
             # الرفع النهائي
             git push origin main
           else
-            echo "لا توجد بيانات جديدة لرصدها."
+            echo "لم يتم رصد أي أخبار جديدة في هذه الدورة."
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
