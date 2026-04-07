@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: 1. سحب الكود المصدري
+      - name: 1. سحب المشروع
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # ضروري جداً لجلب تاريخ العمليات بالكامل
+          fetch-depth: 0
 
-      - name: 2. تجهيز بيئة بايثون
+      - name: 2. إعداد بايثون
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -30,28 +30,28 @@ jobs:
           python scripts/banned_news.py
         continue-on-error: true
 
-      - name: 4. مزامنة وفرض رفع البيانات
+      - name: 4. المزامنة القسرية والرفع (Force Push Strategy)
         run: |
           git config --local user.email "radar-bot@bannednews.com"
           git config --local user.name "Radar-Engine-Bot"
           
-          # 1. جلب آخر التحديثات من الخادم أولاً
-          git fetch origin main
-          
-          # 2. إضافة ملفات الـ JSON الجديدة
+          # إضافة التغييرات
           git add .
           
-          # 3. التحقق من وجود تغييرات
+          # التحقق من وجود بيانات جديدة
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "تحديث رادار الحقيقة: أرشفة بيانات جديدة"
             
-            # 4. دمج التغييرات بذكاء:
-            # نستخدم Rebase لجعل تاريخ العمليات خطاً مستقيماً، 
-            # ونستخدم -X theirs لتفضيل بيانات الرادار الجديدة في حال التعارض.
-            git pull --rebase -X theirs origin main
+            # جلب آخر التحديثات وتطبيق التعديلات فوقها برفق
+            git pull --rebase origin main
             
-            # 5. الرفع النهائي مع تحديد الوجهة بدقة
-            git push origin main
+            # في حال فشل الـ rebase بسبب تعارض ملفات JSON، سنفرض نسخة الرادار
+            if [ $? -ne 0 ]; then
+              git rebase --abort
+              git push origin main --force
+            else
+              git push origin main
+            fi
           else
-            echo "لا توجد بيانات جديدة لرصدها."
+            echo "لا توجد بيانات جديدة."
           fi
