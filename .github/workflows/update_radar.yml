@@ -16,38 +16,42 @@ jobs:
       - name: 1. سحب الكود المصدري
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # سحب التاريخ الكامل لتجنب أخطاء الدمج
+          fetch-depth: 0 # ضروري جداً لجلب تاريخ العمليات بالكامل
 
       - name: 2. تجهيز بيئة بايثون
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: 3. تشغيل محركات الرصد (Radars)
+      - name: 3. تشغيل محركات الرصد
         run: |
           python scripts/palestine_center.py
           python scripts/military_ops.py
           python scripts/banned_news.py
         continue-on-error: true
 
-      - name: 4. المعالجة الجنائية والحفظ (الحل الجذري)
+      - name: 4. مزامنة وفرض رفع البيانات
         run: |
           git config --local user.email "radar-bot@bannednews.com"
           git config --local user.name "Radar-Engine-Bot"
           
-          # أولاً: إضافة كل الملفات التي تغيرت أو استجدت
+          # 1. جلب آخر التحديثات من الخادم أولاً
+          git fetch origin main
+          
+          # 2. إضافة ملفات الـ JSON الجديدة
           git add .
           
-          # ثانياً: الحفظ المحلي فقط إذا كانت هناك تغييرات
+          # 3. التحقق من وجود تغييرات
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "تحديث سيادي: أرشفة الأخبار المرصودة تلقائياً"
+            git commit -m "تحديث رادار الحقيقة: أرشفة بيانات جديدة"
             
-            # ثالثاً: سحب التحديثات مع إخفاء التغييرات مؤقتاً (Stash) وإعادة دمجها
-            # هذا الأمر يحل مشكلة الـ 15 خطأ بشكل نهائي
-            git pull --rebase --autostash origin main
+            # 4. دمج التغييرات بذكاء:
+            # نستخدم Rebase لجعل تاريخ العمليات خطاً مستقيماً، 
+            # ونستخدم -X theirs لتفضيل بيانات الرادار الجديدة في حال التعارض.
+            git pull --rebase -X theirs origin main
             
-            # رابعاً: الرفع النهائي للبيانات الموثقة
+            # 5. الرفع النهائي مع تحديد الوجهة بدقة
             git push origin main
           else
-            echo "لا توجد بيانات جديدة لرصدها في هذه الدورة."
+            echo "لا توجد بيانات جديدة لرصدها."
           fi
