@@ -5,18 +5,23 @@ on:
     - cron: '0 */4 * * *'
   workflow_dispatch:
 
+# 1. إضافة مهمة جداً لمنح البوت صلاحية حفظ ورفع الملفات إلى المستودع
+permissions:
+  contents: write
+
 jobs:
-  run-radars: # هنا يجب أن تكون هناك مسافتان في بداية السطر
+  run-radars:
     runs-on: ubuntu-latest
     
     steps:
       - name: 1. سحب ملفات المشروع
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
+          ref: main # 2. إجبار الأكشن على استخدام فرع main لتجنب مشكلة الانفصال (Detached HEAD)
           fetch-depth: 0
 
       - name: 2. تجهيز بيئة بايثون
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -37,18 +42,12 @@ jobs:
           git config --local user.email "radar-bot@bannednews.com"
           git config --local user.name "Radar Bot"
           
-          # 1. إضافة كافة التغييرات والملفات الجديدة
           git add .
           
-          # 2. التحقق من وجود تغييرات فعلية لتجنب خطأ الحفظ الفارغ
           if ! git diff --staged --quiet; then
-            # 3. حفظ التغييرات محلياً أولاً
             git commit -m "تحديث تلقائي: رصد بيانات أخبار جديدة"
-            # 4. سحب أي تحديثات من المستودع بمرونة
             git pull --rebase origin main
-            # 5. رفع البيانات النهائية إلى المستودع
-            git push
+            git push origin main # 3. تحديد الفرع صراحة أثناء الرفع لضمان نجاح العملية
           else
             echo "لا توجد بيانات أو أخبار جديدة لرفعها في هذا التشغيل."
           fi
-
