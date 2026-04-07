@@ -35,8 +35,20 @@ jobs:
       - name: Commit and Push New Data
         run: |
           git config --local user.email "radar-bot@bannednews.com"
-          git config --local user.name "Radar-Bot"
-          git add data/*.json
-          git pull --rebase origin main
-          git commit -m "تم التقاط وتوثيق أخبار ميدانية جديدة" || echo "No changes to commit"
-          git push origin main
+          git config --local user.name "Radar Bot"
+          
+          # 1. إضافة كافة التغييرات والملفات الجديدة
+          git add .
+          
+          # 2. التحقق من وجود تغييرات فعلية لتجنب خطأ الحفظ الفارغ
+          if ! git diff --staged --quiet; then
+            # 3. حفظ التغييرات محلياً أولاً
+            git commit -m "تحديث تلقائي: رصد بيانات أخبار جديدة"
+            # 4. سحب أي تحديثات من المستودع بمرونة
+            git pull --rebase origin main
+            # 5. رفع البيانات النهائية إلى المستودع
+            git push
+          else
+            echo "لا توجد بيانات أو أخبار جديدة لرفعها في هذا التشغيل."
+          fi
+
